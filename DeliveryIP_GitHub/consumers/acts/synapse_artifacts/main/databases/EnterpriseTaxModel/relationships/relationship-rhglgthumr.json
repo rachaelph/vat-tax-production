@@ -1,0 +1,29 @@
+{
+	"name": "relationship-rhglgthumr",
+	"properties": {
+		"Name": "relationship-rhglgthumr",
+		"EntityType": "RELATIONSHIP",
+		"Namespace": {
+			"DatabaseName": "EnterpriseTaxModel"
+		},
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"FromTableName": "Customer",
+		"ToTableName": "CustomerLocation",
+		"ColumnRelationshipInformations": [
+			{
+				"FromColumnName": "CustomerId",
+				"ToColumnName": "CustomerId"
+			}
+		],
+		"RelationshipType": 0,
+		"Properties": {
+			"DerivedModelRelationshipInfo": "{\"baseRelationship\":{\"fromEntity\":\"Customer.cdm.json/Customer\",\"toEntity\":\"CustomerLocation.cdm.json/CustomerLocation\",\"joinPairs\":[{\"fromAttribute\":\"CustomerId\",\"toAttribute\":\"CustomerId\"}]}}"
+		},
+		"PublishStatus": "PUBLISHED",
+		"ObjectVersion": 2,
+		"ObjectId": "59056465-a628-4969-b0a7-2e399324783e"
+	},
+	"type": "RELATIONSHIP"
+}

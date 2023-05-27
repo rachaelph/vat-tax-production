@@ -1,0 +1,29 @@
+{
+	"name": "relationship-unttzxyrzc",
+	"properties": {
+		"Name": "relationship-unttzxyrzc",
+		"EntityType": "RELATIONSHIP",
+		"Namespace": {
+			"DatabaseName": "EnterpriseTaxModel"
+		},
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"FromTableName": "Customer",
+		"ToTableName": "IndividualCustomer",
+		"ColumnRelationshipInformations": [
+			{
+				"FromColumnName": "CustomerId",
+				"ToColumnName": "CustomerId"
+			}
+		],
+		"RelationshipType": 0,
+		"Properties": {
+			"DerivedModelRelationshipInfo": "{\"baseRelationship\":{\"fromEntity\":\"Customer.cdm.json/Customer\",\"toEntity\":\"IndividualCustomer.cdm.json/IndividualCustomer\",\"joinPairs\":[{\"fromAttribute\":\"CustomerId\",\"toAttribute\":\"CustomerId\"}]}}"
+		},
+		"PublishStatus": "PUBLISHED",
+		"ObjectVersion": 2,
+		"ObjectId": "88742b6e-1cd7-4089-9fd1-03f23bfc501a"
+	},
+	"type": "RELATIONSHIP"
+}

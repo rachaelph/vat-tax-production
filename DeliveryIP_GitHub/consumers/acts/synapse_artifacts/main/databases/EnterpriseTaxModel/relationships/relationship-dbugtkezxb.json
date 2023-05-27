@@ -1,0 +1,23 @@
+{
+	"name": "relationship-dbugtkezxb",
+	"properties": {
+		"Name": "relationship-dbugtkezxb",
+		"EntityType": "RELATIONSHIP",
+		"Namespace": {
+			"DatabaseName": "EnterpriseTaxModel"
+		},
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"FromTableName": "Customer",
+		"ToTableName": "TaxpayerStateSector",
+		"ColumnRelationshipInformations": [
+			{
+				"FromColumnName": "OriginalCustomerID",
+				"ToColumnName": "TaxpayerId"
+			}
+		],
+		"RelationshipType": 0
+	},
+	"type": "RELATIONSHIP"
+}
