@@ -1,0 +1,45 @@
+{
+
+    "AllowAccessToIpRange": true,
+    "IpRangeCidr": "0.0.0.0",
+    "IpRangeStart": "0.0.0.0",
+    "IpRangeEnd": "0.0.0.0",
+
+    "DeployNewVnet": false,
+    "NewVnetAddressSpace": "10.253.0.0/18",
+
+    "DeployLogicAppInVnet": true,
+    "DeployMLComputeInVnet": true,
+    
+    "VnetForResourcesRgName": "dataStrategyGHDemo-VNET-VM",
+    "VnetForResourcesName": "dsdemovnetprod60",
+    "LogicAppSubnetName": "logicAppSubnet",
+    "MLComputeSubnetName": "AzurePaasResources",
+
+    "CreatePrivateEndpoints": true,
+    "CreatePrivateEndpointsInSameRgAsResource": true,
+    "UseManualPrivateLinkServiceConnections": false,
+
+    "VnetforPrivateEndpointsRgName": "dataStrategyGHDemo-VNET-VM",
+    "VnetforPrivateEndpointsName": "dsdemovnetprod60",
+    "PrivateEndpointSubnetName": "AzurePaasResources",
+
+    "PrivateEndpointId": "prod",
+
+    "CreateNewPrivateDNSZones": false,
+    "PrivateDNSZoneRgName": "dataStrategyGHDemo-VNET-VM",
+
+    "DeployADFPortalPrivateEndpoint": true,
+    "DeploySynapseWebPrivateEndpoint": false,
+    "DeployPurviewPrivateEndpoints": true,
+    "DeployPurviewIngestionPrivateEndpoints": true,
+
+    "RedeploymentAfterNetworkingIsSetUp": false,
+
+    "DeployVMswithBastion": false,
+    "JumpBoxSubnetName": "jumpbox",
+    "vmsPerEnv": 2,
+    "vmName": "dsdemovmprod60",
+    "bastionName": "dsdemobastionprod60"
+
+}
