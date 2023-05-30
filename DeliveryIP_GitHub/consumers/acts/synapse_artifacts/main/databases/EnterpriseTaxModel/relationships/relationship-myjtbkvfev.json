@@ -1,0 +1,23 @@
+{
+	"name": "relationship-myjtbkvfev",
+	"properties": {
+		"Name": "relationship-myjtbkvfev",
+		"EntityType": "RELATIONSHIP",
+		"Namespace": {
+			"DatabaseName": "EnterpriseTaxModel"
+		},
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"FromTableName": "Customer",
+		"ToTableName": "Sector",
+		"ColumnRelationshipInformations": [
+			{
+				"FromColumnName": "OriginalCustomerID",
+				"ToColumnName": "TaxpayerId"
+			}
+		],
+		"RelationshipType": 0
+	},
+	"type": "RELATIONSHIP"
+}
