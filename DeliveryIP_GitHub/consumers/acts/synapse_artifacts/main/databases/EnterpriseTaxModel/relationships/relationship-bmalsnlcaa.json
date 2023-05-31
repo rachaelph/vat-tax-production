@@ -1,0 +1,23 @@
+{
+	"name": "relationship-bmalsnlcaa",
+	"properties": {
+		"Name": "relationship-bmalsnlcaa",
+		"EntityType": "RELATIONSHIP",
+		"Namespace": {
+			"DatabaseName": "EnterpriseTaxModel"
+		},
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"FromTableName": "Customer",
+		"ToTableName": "VAT_Targets",
+		"ColumnRelationshipInformations": [
+			{
+				"FromColumnName": "OriginalCustomerID",
+				"ToColumnName": "TaxpayerId"
+			}
+		],
+		"RelationshipType": 0
+	},
+	"type": "RELATIONSHIP"
+}
