@@ -1,0 +1,39 @@
+{
+    "DeployTestEnvironment": false,
+    
+    "DeployResourcesWithPublicAccess": true,
+
+    "DeployWithCustomNetworking": false,
+
+    "azureResourceLocation": "eastus2",
+
+    "tags": {
+        "env": "test"
+    },
+
+    "AADGroup_Name": "",
+
+    "NewResourceGroupName": "rg-actsd-test-eu2-consumer-01",
+
+    "NewSynapseWorkspaceName": "",
+
+    "NewAzureSQLServerName": "",
+
+    "DeploySynapseWithDataExfiltrationProtection": false,
+
+    "DeployNewConsumerMlWorkspace": true,
+
+    "NewMlWorkspaceName": "",
+
+    "NewMlKeyVaultName": "",
+
+    "NewMlStorageName": "",
+
+    "NewMlAppInsightsName": "",
+
+    "NewMlContainerRegistryName": "",
+
+    "ConnectToExistingPurview": true,
+    "ConnectToExistingLogAnalytics": true,
+    "ConnectToExistingCognitiveService": true
+}

@@ -1,0 +1,59 @@
+{
+    "name": "df_loadStateSector_fromStaging",
+    "properties": {
+        "folder": {
+            "name": "df_LakeDBLoad/OperationalMapped"
+        },
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "linkedService": {
+                        "referenceName": "LS_DataLake",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "StateSector"
+                }
+            ],
+            "sinks": [
+                {
+                    "name": "TaxpayerStateSector"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "derivedColumn1"
+                }
+            ],
+            "scriptLines": [
+                "source(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false,",
+                "     format: 'parquet',",
+                "     fileSystem: 'staging',",
+                "     wildcardPaths:['Tax/Undefined/TaxpayerStateSector/*']) ~> StateSector",
+                "StateSector derive({Month Year} = toDate({Month Year})) ~> derivedColumn1",
+                "derivedColumn1 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     store: 'synapse',",
+                "     databaseType: 'spark',",
+                "     format: 'table',",
+                "     database: 'EnterpriseTaxModel',",
+                "     tableName: 'TaxpayerStateSector',",
+                "     input(",
+                "          TaxpayerId as string,",
+                "          StateId as string,",
+                "          StateName as string,",
+                "          Date as date,",
+                "          Sector as string",
+                "     ),",
+                "     mapColumn(",
+                "          TaxpayerId = TaxpayerID,",
+                "          StateName = State,",
+                "          Date = {Month Year},",
+                "          Sector = Sector1",
+                "     )) ~> TaxpayerStateSector"
+            ]
+        }
+    }
+}

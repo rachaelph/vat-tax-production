@@ -1,0 +1,219 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Execute_stored_procedure": {
+                "inputs": {
+                    "parameters": {
+                        "storedProcedureName": "usp_PackagePayloadConfigurator",
+                        "storedProcedureParameters": {
+                            "ContractID": "55641209-2ce2-4c90-8133-6f5f6bcc838f"
+                        }
+                    },
+                    "serviceProviderConfiguration": {
+                        "connectionName": "sql",
+                        "operationId": "executeStoredProcedure",
+                        "serviceProviderId": "/serviceProviders/sql"
+                    }
+                },
+                "runAfter": {},
+                "type": "ServiceProvider"
+            },
+            "HTTP": {
+                "inputs": {
+                    "body": "@outputs('Compose')",
+                    "method": "POST",
+                    "uri": "https://actsd-dev-eu2-logic-02.azurewebsites.net:443/api/DataContractIngestion/triggers/When_a_HTTP_request_is_received/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=YMkII2uEILxLzvIKNpzLMbVV6Wl0PFkWFJQa3mhik_w"
+                },
+                "runAfter": {
+                    "Set_variable": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Http"
+            },
+            "Parse_DataAssetTechnicalInformation": {
+                "inputs": {
+                    "content": "@body('Parse_JSON')?['DataAssetTechnicalInformation']",
+                    "schema": {}
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Parse_IngestionSchedule": {
+                "inputs": {
+                    "content": "@body('Parse_JSON')?['IngestionSchedule']",
+                    "schema": {}
+                },
+                "runAfter": {
+                    "Parse_DataAssetTechnicalInformation": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Parse_JSON": {
+                "inputs": {
+                    "content": "@triggerBody()",
+                    "schema": {
+                        "properties": {
+                            "@@odata.etag": {
+                                "type": "string"
+                            },
+                            "Active": {
+                                "type": "boolean"
+                            },
+                            "ActiveDate": {
+                                "type": "string"
+                            },
+                            "ConnectionType": {
+                                "type": "string"
+                            },
+                            "CreatedBy": {
+                                "type": "string"
+                            },
+                            "CreatedByDate": {
+                                "type": "string"
+                            },
+                            "DataAssetTechnicalInformation": {
+                                "type": "string"
+                            },
+                            "DataContractID": {
+                                "type": "string"
+                            },
+                            "DataSourceName": {
+                                "type": "string"
+                            },
+                            "Id": {
+                                "type": "integer"
+                            },
+                            "IngestionSchedule": {
+                                "type": "string"
+                            },
+                            "ItemInternalId": {
+                                "type": "string"
+                            },
+                            "Publisher": {
+                                "type": "string"
+                            },
+                            "SourceTechnicalInformation": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {
+                    "set_the_Body_parameter": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Parse_SourceTechnicalInformation": {
+                "inputs": {
+                    "content": "@body('Parse_JSON')?['SourceTechnicalInformation']",
+                    "schema": {}
+                },
+                "runAfter": {
+                    "Parse_IngestionSchedule": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Set_variable": {
+                "inputs": {
+                    "name": "body",
+                    "value": "@{outputs('Compose')}"
+                },
+                "runAfter": {
+                    "Switch": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "SetVariable"
+            },
+            "Switch": {
+                "cases": {
+                    "Delimted_Text": {
+                        "actions": {
+                            "Compose": {
+                                "inputs": [
+                                    {
+                                        "DataContractID": "@{body('Parse_JSON')?['DataContractID']}",
+                                        "SinkFileSystem": "@{body('Parse_DataAssetTechnicalInformation')[0]?['SinkContainer']} ",
+                                        "SourceContainer": "@{body('Parse_SourceTechnicalInformation')[0]?['SourceContainer']}",
+                                        "SourceFolderPath": "@{body('Parse_SourceTechnicalInformation')[0]?['SourceFolderPath']}",
+                                        "SourceType": "@{body('Parse_SourceTechnicalInformation')[0]?['SourceType']}",
+                                        "columnDelimiter": "@{body('Parse_DataAssetTechnicalInformation')[0]?['DelimiterType']}",
+                                        "dynamicSinkPath": "@{body('Parse_SourceTechnicalInformation')[0]?['dynamicSinkPath']}",
+                                        "fileExtension": "@{body('Parse_SourceTechnicalInformation')[0]?['fileExtension']}",
+                                        "fileName": "@{body('Parse_DataAssetTechnicalInformation')[0]?['DelimitedFilename']}",
+                                        "fileType": "@{body('Parse_DataAssetTechnicalInformation')[0]?['fileType']}",
+                                        "storedProcedureName": "@{body('Parse_SourceTechnicalInformation')[0]?['storedProcedureName']}"
+                                    }
+                                ],
+                                "runAfter": {},
+                                "type": "Compose"
+                            }
+                        },
+                        "case": "Delimited Text"
+                    }
+                },
+                "default": {
+                    "actions": {}
+                },
+                "expression": "@body('Parse_JSON')?['ConnectionType']",
+                "runAfter": {
+                    "Parse_SourceTechnicalInformation": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Switch"
+            },
+            "set_the_Body_parameter": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "body",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Execute_stored_procedure": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "When_an_item_is_created_(V2)": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "sql_1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('mainSQL.database.windows.net'))},@{encodeURIComponent(encodeURIComponent('MetadataControl'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Handshake]'))}/onnewitems"
+                },
+                "recurrence": {
+                    "frequency": "Second",
+                    "interval": 15
+                },
+                "splitOn": "@triggerBody()?['value']",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "kind": "Stateful"
+}

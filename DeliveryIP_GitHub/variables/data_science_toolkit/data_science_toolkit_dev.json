@@ -1,0 +1,67 @@
+{
+    "DataScienceToolkitRgName": "acts-dev-ux-automation2",
+
+    "appServicePlanName": "ds2demo-dev-use-asp-03",
+
+    "functionAppName": "ds2demo-dev-use-func-02",
+
+    "functionAppInsightsName": "ds2demo-dev-use-func-appi-02",
+
+    "functionAppStorageName": "ds2demodevusefuncst02",
+
+    "webAppName": "ds2demo-dev-use-web-app-02",
+
+    "webAppInsightsName": "ds2demo-dev-use-web-appi-02",
+
+    "webAppStorageName": "ds2demodevusewebst02",
+
+    "staticWebAppName": "ds2demo-dev-use-static-web-app-02",
+
+    "cosmosDbName": "ds2demo-dev-use-cosmos-05",
+
+    "communicationServicesName": "ds2demo-dev-use-comm-02",
+
+    "emailCommunicationServicesName": "ds2demo-dev-use-email-comm-02",
+
+    "keyVaultName": "ds2demo-dev-use-kv-03",
+
+    "cognitiveSearchName": "ds2demo-dev-use-cs-02",
+
+    "serviceBusNamespaceName": "ds2demo-dev-use-sbus-02",
+
+    "DeployFunctionAppInVnet": false,
+
+    "DeployWebAppInVnet": false,
+
+    "AppServiceSubnetName": "",
+
+    "webTitle":"Data Science Toolkit Shared Data Services",
+
+    "authInstance": "login.microsoftonline.com",
+
+    "analytics_report_url": "https://msit.powerbi.com/reportEmbed?reportId=3c61be50-bf25-40fc-9653-dae47fd90c7d&autoAuth=true&ctid=72f988bf-86f1-41af-91ab-2d7cd011db47",
+
+    "run_flags": "\"dstoolkit-nav\", \"no-demo-hosting\", \"workflows-enabled\", \"logged-in-as-consumer\"",
+
+    "PlatformContactRecipients": "francesco.sparacio@microsoft.com",
+
+    "GitHubConfiguration__Organization": "microsoft",
+
+    "GitHubConfiguration__InstallationId": 33349041,
+
+    "GitHubConfiguration__AppId": 282507,
+
+    "GitHubConfiguration__TokenExpiration": 600,
+
+    "GitHubConfiguration__UsePAT": false,
+
+    "statistics_function_cron": "0 0 7 * * FRI",
+
+    "enrichment_function_cron": "0 0 0/4 * * *",
+
+    "deployment_status_refresh_ms": 3000,
+
+    "DataScienceAppTenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+
+    "DataScienceAppClientId": "3d9c67ff-aceb-4609-a18c-ab53666c6b82"
+}
