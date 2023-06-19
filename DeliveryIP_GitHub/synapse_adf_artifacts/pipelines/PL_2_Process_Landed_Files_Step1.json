@@ -1,0 +1,135 @@
+{
+    "name": "PL_2_Process_Landed_Files_Step1",
+    "properties": {
+        "activities": [
+            {
+                "name": "Landed File Is NOT a Temp File",
+                "description": "Don't Run",
+                "type": "IfCondition",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@not(contains(pipeline().parameters.sourceFolder, '/_temporary/'))",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Step 2 Pipeline",
+                            "type": "ExecutePipeline",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "pipeline": {
+                                    "referenceName": "PL_2_Process_Landed_Files_Step2",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": true,
+                                "parameters": {
+                                    "sourceFolder": {
+                                        "value": "@pipeline().parameters.sourceFolder",
+                                        "type": "Expression"
+                                    },
+                                    "sourceFile": {
+                                        "value": "@pipeline().parameters.sourceFile",
+                                        "type": "Expression"
+                                    },
+                                    "triggerName": {
+                                        "value": "@pipeline().TriggerName",
+                                        "type": "Expression"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set Logging Record to Failed",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [
+                                {
+                                    "activity": "Step 2 Pipeline",
+                                    "dependencyConditions": [
+                                        "Failed"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": "dbo.LogDataLandedInLandingZone",
+                                "storedProcedureParameters": {
+                                    "source_filename": {
+                                        "value": {
+                                            "value": "@pipeline().parameters.sourceFile",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    },
+                                    "source_folderpath": {
+                                        "value": {
+                                            "value": "@concat(pipeline().parameters.sourceFolder,'/')",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    },
+                                    "ingestion_status": {
+                                        "value": "Failed",
+                                        "type": "String"
+                                    },
+                                    "pipeline_id": {
+                                        "value": {
+                                            "value": "@pipeline().RunId",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    },
+                                    "id_to_update": {
+                                        "value": "0",
+                                        "type": "Int32"
+                                    },
+                                    "pipeline_trigger": {
+                                        "value": {
+                                            "value": "@pipeline().TriggerName",
+                                            "type": "Expression"
+                                        },
+                                        "type": "String"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "LS_SQL_MetadataControl",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "sourceFolder": {
+                "type": "string"
+            },
+            "sourceFile": {
+                "type": "string"
+            }
+        },
+        "variables": {
+            "copyBehavior": {
+                "type": "String"
+            },
+            "folderPathNoContainer": {
+                "type": "String"
+            }
+        },
+        "folder": {
+            "name": "ProcessLandingZone"
+        },
+        "annotations": [],
+        "lastPublishTime": "2023-02-20T21:12:21Z"
+    }
+}
