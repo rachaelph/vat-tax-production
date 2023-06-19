@@ -1,0 +1,697 @@
+{
+    "name": "PL_2_Process_Landed_Files_Step5",
+    "properties": {
+        "activities": [
+            {
+                "name": "Create New Control File",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "File Decompress Not Needed",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(activity('Determine Control File Version').output.firstRow.Flag_New_Existing,'new')",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Create Control File",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzureSqlSource",
+                                    "additionalColumns": [
+                                        {
+                                            "name": "VersionNumber",
+                                            "value": {
+                                                "value": "@activity('Determine Control File Version').output.firstRow.VersionNumber",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        {
+                                            "name": "FileType",
+                                            "value": {
+                                                "value": "@pipeline().parameters.fileType",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        {
+                                            "name": "NumberofColumns",
+                                            "value": {
+                                                "value": "@pipeline().parameters.fileNumberOfCols",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        {
+                                            "name": "Structure",
+                                            "value": {
+                                                "value": "@pipeline().parameters.fileStructure",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    ],
+                                    "sqlReaderStoredProcedureName": "[dbo].[GetDataContract]",
+                                    "storedProcedureParameters": {
+                                        "control_table_record_id": {
+                                            "type": "Int32",
+                                            "value": {
+                                                "value": "@pipeline().parameters.controlTableId",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    "queryTimeout": "02:00:00",
+                                    "partitionOption": "None"
+                                },
+                                "sink": {
+                                    "type": "JsonSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "JsonWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "validateDataConsistency": true
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_SQL_ControlTable",
+                                    "type": "DatasetReference"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_ADLS_JSON_File",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": {
+                                            "value": "@pipeline().parameters.sinkContainer",
+                                            "type": "Expression"
+                                        },
+                                        "folderPath": {
+                                            "value": "@concat(pipeline().parameters.sinkFolderPath\n,'v',activity('Determine Control File Version').output.firstRow.VersionNumber\n,'/controlfile/')",
+                                            "type": "Expression"
+                                        },
+                                        "fileName": "controlfile.json",
+                                        "encoding": "UTF-8"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Add Logging Record",
+                "type": "SqlServerStoredProcedure",
+                "dependsOn": [
+                    {
+                        "activity": "Create New Control File",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "storedProcedureName": "dbo.LogDataLandedInLandingZone",
+                    "storedProcedureParameters": {
+                        "source_filename": {
+                            "value": {
+                                "value": "@pipeline().parameters.sourceFile",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "source_folderpath": {
+                            "value": {
+                                "value": "@concat(pipeline().parameters.sourceFolder,'/')",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "source_file_md5_hash": {
+                            "value": {
+                                "value": "@coalesce(pipeline().parameters.md5Hash,'N/A')",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "ignoredStatus": {
+                            "value": "Not Ignored",
+                            "type": "String"
+                        },
+                        "duplicateStatus": {
+                            "value": "Not Duplicate",
+                            "type": "String"
+                        },
+                        "destination_filename": {
+                            "value": {
+                                "value": "@pipeline().parameters.sourceFile",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "destination_folderpath": {
+                            "value": {
+                                "value": "@concat('raw/'\n,pipeline().parameters.sinkFolderPath\n,'v',activity('Determine Control File Version').output.firstRow.VersionNumber\n,'/',pipeline().parameters.loadType,'/'\n,formatDateTime(utcnow(),'yyyy'),'/'\n,formatDateTime(utcnow(),'MM'),'/'\n,formatDateTime(utcnow(),'dd'),'/')",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "ingestion_status": {
+                            "value": "Processed",
+                            "type": "String"
+                        },
+                        "pipeline_trigger": {
+                            "value": {
+                                "value": "@pipeline().parameters.triggerName",
+                                "type": "Expression"
+                            },
+                            "type": "String"
+                        },
+                        "id_to_update": {
+                            "value": {
+                                "value": "@pipeline().parameters.loggingTableId",
+                                "type": "Expression"
+                            },
+                            "type": "Int32"
+                        }
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "LS_SQL_MetadataControl",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "Implement FIFO by Control Table Record",
+                "type": "Until",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(variables('landedFirst'),true)",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "Check FIFO Status",
+                            "type": "Lookup",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzureSqlSource",
+                                    "sqlReaderStoredProcedureName": "[dbo].[FIFO_Status]",
+                                    "storedProcedureParameters": {
+                                        "control_table_record_id": {
+                                            "type": "Int32",
+                                            "value": {
+                                                "value": "@pipeline().parameters.controlTableId",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        "logging_table_record_id": {
+                                            "type": "Int32",
+                                            "value": {
+                                                "value": "@pipeline().parameters.loggingTableId",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    "queryTimeout": "02:00:00",
+                                    "partitionOption": "None"
+                                },
+                                "dataset": {
+                                    "referenceName": "DS_SQL_ControlTable",
+                                    "type": "DatasetReference"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set FIFO Value",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Check FIFO Status",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "landedFirst",
+                                "value": {
+                                    "value": "@if(equals(activity('Check FIFO Status').output.firstRow.continue_processing,'Yes'),true,false)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "If File Landed First is Being Processed",
+                            "type": "IfCondition",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FIFO Value",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@equals(variables('landedFirst'),false)",
+                                    "type": "Expression"
+                                },
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Wait 30 secs",
+                                        "type": "Wait",
+                                        "dependsOn": [],
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "waitTimeInSeconds": 30
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "timeout": "0.12:00:00"
+                }
+            },
+            {
+                "name": "Check if First Load for Dataset",
+                "type": "Lookup",
+                "dependsOn": [
+                    {
+                        "activity": "Implement FIFO by Control Table Record",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureSqlSource",
+                        "sqlReaderStoredProcedureName": "[dbo].[DatasetFirstLoadCheck]",
+                        "storedProcedureParameters": {
+                            "control_table_record_id": {
+                                "type": "Int32",
+                                "value": {
+                                    "value": "@pipeline().parameters.controlTableId",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        "queryTimeout": "02:00:00",
+                        "partitionOption": "None"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_SQL_ControlTable",
+                        "type": "DatasetReference"
+                    }
+                }
+            },
+            {
+                "name": "If Not First Load",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Check if First Load for Dataset",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(activity('Check if First Load for Dataset').output.firstRow.firstLoad\n,'No')",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Get Existing Control File",
+                            "type": "Lookup",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "JsonSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true,
+                                        "wildcardFolderPath": {
+                                            "value": "@concat(pipeline().parameters.sinkFolderPath,'*/controlfile/')",
+                                            "type": "Expression"
+                                        },
+                                        "wildcardFileName": "controlfile.json",
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "JsonReadSettings"
+                                    }
+                                },
+                                "dataset": {
+                                    "referenceName": "DS_ADLS_JSON_File",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": "raw",
+                                        "folderPath": "wildcardfilepathused",
+                                        "fileName": "wildcardfilepathused",
+                                        "encoding": "UTF-8"
+                                    }
+                                },
+                                "firstRowOnly": false
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Determine Control File Version",
+                "type": "Lookup",
+                "dependsOn": [
+                    {
+                        "activity": "If Not First Load",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureSqlSource",
+                        "sqlReaderStoredProcedureName": "[dbo].[DetermineFileVersionForControlFile]",
+                        "storedProcedureParameters": {
+                            "current_file_structure": {
+                                "type": "String",
+                                "value": {
+                                    "value": "@pipeline().parameters.fileStructure",
+                                    "type": "Expression"
+                                }
+                            },
+                            "prior_control_file_output": {
+                                "type": "String",
+                                "value": {
+                                    "value": "@if( equals(activity('Check if First Load for Dataset').output.firstRow.firstLoad,'Yes'),\n'[]',\nstring(activity('Get Existing Control File').output.value)\n)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        "queryTimeout": "02:00:00",
+                        "partitionOption": "None"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_SQL_ControlTable",
+                        "type": "DatasetReference"
+                    }
+                }
+            },
+            {
+                "name": "File Decompress Not Needed",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Determine Control File Version",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@or(\n    equals(json(pipeline().parameters.CopySourceSettings).compression,'None'),\n     equals(json(pipeline().parameters.CopySourceSettings).compression,'')\n)\n",
+                        "type": "Expression"
+                    },
+                    "ifFalseActivities": [
+                        {
+                            "name": "Landing to Raw w Compression",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "BinarySource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true
+                                    },
+                                    "formatSettings": {
+                                        "type": "BinaryReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "BinarySink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_Landing_Binary_Compressed_File",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": {
+                                            "value": "@pipeline().parameters.sourceContainer",
+                                            "type": "Expression"
+                                        },
+                                        "folderPath": {
+                                            "value": "@pipeline().parameters.folderPathNoContainer",
+                                            "type": "Expression"
+                                        },
+                                        "fileName": {
+                                            "value": "@pipeline().parameters.sourceFile",
+                                            "type": "Expression"
+                                        },
+                                        "compression": {
+                                            "value": "@json(pipeline().parameters.CopySourceSettings).compression",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_ADLS_Binary_Folder",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": {
+                                            "value": "@pipeline().parameters.sinkContainer",
+                                            "type": "Expression"
+                                        },
+                                        "folderPath": {
+                                            "value": "@concat(pipeline().parameters.sinkFolderPath\n,'v',activity('Determine Control File Version').output.firstRow.VersionNumber\n,'/',pipeline().parameters.loadType,'/'\n,formatDateTime(utcnow(),'yyyy'),'/'\n,formatDateTime(utcnow(),'MM'),'/'\n,formatDateTime(utcnow(),'dd'),'/')",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "Landing to Raw",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "BinarySource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": true
+                                    },
+                                    "formatSettings": {
+                                        "type": "BinaryReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "BinarySink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "validateDataConsistency": false
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_Landing_Binary_File",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": {
+                                            "value": "@pipeline().parameters.sourceContainer",
+                                            "type": "Expression"
+                                        },
+                                        "folderPath": {
+                                            "value": "@pipeline().parameters.folderPathNoContainer",
+                                            "type": "Expression"
+                                        },
+                                        "fileName": {
+                                            "value": "@pipeline().parameters.sourceFile",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_ADLS_Binary_File",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "container": {
+                                            "value": "@pipeline().parameters.sinkContainer",
+                                            "type": "Expression"
+                                        },
+                                        "folderPath": {
+                                            "value": "@concat(pipeline().parameters.sinkFolderPath\n,'v',activity('Determine Control File Version').output.firstRow.VersionNumber\n,'/',pipeline().parameters.loadType,'/'\n,formatDateTime(utcnow(),'yyyy'),'/'\n,formatDateTime(utcnow(),'MM'),'/'\n,formatDateTime(utcnow(),'dd'),'/')",
+                                            "type": "Expression"
+                                        },
+                                        "fileName": {
+                                            "value": "@pipeline().parameters.sourceFile",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "sourceFolder": {
+                "type": "string"
+            },
+            "sourceFile": {
+                "type": "string"
+            },
+            "md5Hash": {
+                "type": "string"
+            },
+            "loggingTableId": {
+                "type": "string"
+            },
+            "folderPathNoContainer": {
+                "type": "string"
+            },
+            "sourceContainer": {
+                "type": "string"
+            },
+            "sinkContainer": {
+                "type": "string"
+            },
+            "CopySourceSettings": {
+                "type": "string"
+            },
+            "controlTableId": {
+                "type": "string"
+            },
+            "sinkFolderPath": {
+                "type": "string"
+            },
+            "loadType": {
+                "type": "string"
+            },
+            "fileType": {
+                "type": "string"
+            },
+            "fileNumberOfCols": {
+                "type": "string"
+            },
+            "fileStructure": {
+                "type": "string"
+            },
+            "triggerName": {
+                "type": "string"
+            }
+        },
+        "variables": {
+            "landedFirst": {
+                "type": "Boolean",
+                "defaultValue": false
+            }
+        },
+        "folder": {
+            "name": "ProcessLandingZone"
+        },
+        "annotations": [],
+        "lastPublishTime": "2023-02-20T22:07:31Z"
+    }
+}

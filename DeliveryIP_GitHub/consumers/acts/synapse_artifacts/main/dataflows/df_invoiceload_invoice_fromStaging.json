@@ -1,0 +1,155 @@
+{
+    "name": "df_invoiceload_invoice_fromStaging",
+    "properties": {
+        "description": "This will map the invoice data to the invoice table in the Lake DB. This is done to bring the invoice amount, the tax amount,the invoice date, the sold to state and the sold to sector into the table per TAX ID",
+        "folder": {
+            "name": "df_LakeDBLoad/OperationalMapped"
+        },
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "linkedService": {
+                        "referenceName": "LS_DataLake",
+                        "type": "LinkedServiceReference"
+                    },
+                    "name": "FactInvoice"
+                },
+                {
+                    "name": "Customer"
+                }
+            ],
+            "sinks": [
+                {
+                    "name": "Invoice"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "select1"
+                },
+                {
+                    "name": "InvoiceId"
+                },
+                {
+                    "name": "derivedColumn1"
+                },
+                {
+                    "name": "lookup1"
+                },
+                {
+                    "name": "aggregate1"
+                },
+                {
+                    "name": "derivedColumn2"
+                },
+                {
+                    "name": "derivedColumn3"
+                },
+                {
+                    "name": "filter2"
+                }
+            ],
+            "scriptLines": [
+                "source(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false,",
+                "     format: 'parquet',",
+                "     fileSystem: 'staging',",
+                "     wildcardPaths:['Tax/Undefined/Invoice/*']) ~> FactInvoice",
+                "source(output(",
+                "          CustomerId as long,",
+                "          OriginalCustomerID as string,",
+                "          CustomerEstablishedDate as date,",
+                "          CustomerTypeId as integer,",
+                "          ResponsibilityCenterId as integer,",
+                "          LedgerId as integer,",
+                "          LedgerAccountNumber as string,",
+                "          CustomerNote as string,",
+                "          PartyId as long,",
+                "          GlobalLocationNumber as decimal(13,0)",
+                "     ),",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     store: 'synapse',",
+                "     databaseType: 'spark',",
+                "     format: 'table',",
+                "     database: 'EnterpriseTaxModel',",
+                "     tableName: 'Customer') ~> Customer",
+                "filter2 select(mapColumn(",
+                "          InvoiceId,",
+                "          CustomerAccountId = CustomerId,",
+                "          TaxPayerId = TaxpayerID,",
+                "          TotalInvoiceAmount = TaxableAmount,",
+                "          TotalInvoiceTaxesAmount = TaxAmount,",
+                "          InvoiceDate = {Invoice Date},",
+                "          InvoiceSoldToState = {Sold-To State},",
+                "          InvoiceSoldToSector = Sector,",
+                "          Year",
+                "     ),",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> select1",
+                "lookup1 keyGenerate(output(InvoiceId as long),",
+                "     startAt: 1L,",
+                "     stepValue: 1L) ~> InvoiceId",
+                "InvoiceId derive(InvoiceId = toInteger(InvoiceId),",
+                "          TaxAmount = toDecimal(TaxAmount),",
+                "          TaxableAmount = toDecimal(TaxableAmount),",
+                "          {Invoice Date} = toDate({Invoice Date})) ~> derivedColumn1",
+                "aggregate1, Customer lookup(TaxpayerID == OriginalCustomerID,",
+                "     multiple: false,",
+                "     pickup: 'any',",
+                "     broadcast: 'auto')~> lookup1",
+                "FactInvoice aggregate(groupBy({Reporting Month},",
+                "          {Invoice Number},",
+                "          {Invoice Date},",
+                "          TaxpayerID,",
+                "          {Sold-To State},",
+                "          TaxableAmount,",
+                "          TaxAmount,",
+                "          {SKU Number},",
+                "          Sector,",
+                "          FlaggedproductCategory,",
+                "          TaxAnomaliesTypes,",
+                "          VATTarget),",
+                "     Count = count(TaxpayerID)) ~> aggregate1",
+                "derivedColumn1 derive(Year = year({Invoice Date})) ~> derivedColumn2",
+                "derivedColumn2 derive(Year = iifNull(Year, 9999)) ~> derivedColumn3",
+                "derivedColumn3 filter(notEquals(Year, 9999)) ~> filter2",
+                "select1 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     store: 'synapse',",
+                "     databaseType: 'spark',",
+                "     format: 'table',",
+                "     database: 'EnterpriseTaxModel',",
+                "     tableName: 'Invoice',",
+                "     input(",
+                "          InvoiceId as integer,",
+                "          CustomerAccountId as long,",
+                "          TaxPayerId as string,",
+                "          InvoiceDate as date,",
+                "          InvoiceToName as string,",
+                "          InvoiceToPartyId as long,",
+                "          InvoiceSoldToState as string,",
+                "          InvoiceSoldToSector as string,",
+                "          InvoiceToLocationId as integer,",
+                "          InvoiceToTelephoneNumber as decimal(15,0),",
+                "          InvoiceToFaxNumber as decimal(15,0),",
+                "          InvoiceToEmailAddress as string,",
+                "          InvoiceNote as string,",
+                "          TotalInvoiceProductAmount as decimal(18,2),",
+                "          TotalInvoiceChargesAmount as decimal(18,2),",
+                "          TotalInvoiceAdjustmentsAmount as decimal(18,2),",
+                "          TotalInvoiceTaxesAmount as decimal(18,2),",
+                "          TotalInvoiceAmount as decimal(18,2),",
+                "          OrderId as long,",
+                "          InvoiceModeId as integer,",
+                "          IsoCurrencyCode as string,",
+                "          InvoiceStatusId as integer,",
+                "          IsoLanguageId as integer,",
+                "          Year as integer",
+                "     )) ~> Invoice"
+            ]
+        }
+    }
+}
