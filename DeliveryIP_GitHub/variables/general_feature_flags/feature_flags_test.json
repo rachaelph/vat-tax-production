@@ -1,0 +1,53 @@
+{    
+    "DeployTestEnvironment": false,
+    
+    "DeployResourcesWithPublicAccess": true,
+
+    "DeployWithCustomNetworking": false,
+
+    "ServicePrincipalHasOwnerRBACAtSubscription": true,
+
+    "DeployDataLake": true,
+
+    "DeployLandingStorage": true,
+
+    "DeployKeyVault": true,
+
+    "DeployAzureSQL": true,
+
+    "DeployAzureSQLArtifacts": true,
+    
+    "DeployMetadataDrivenPipelinesToSynapse": false,
+
+    "DeployADF": true,
+
+    "DeployADFArtifacts": true,
+
+    "DeploySynapse": true,
+
+    "DeploySynapsePools": true,
+
+    "DeploySynapseArtifacts": true,
+
+    "DeploySynapseWithDataExfiltrationProtection": false,
+
+    "DeployPurview": true,
+
+    "DeployLogicApp": true,
+
+    "DeployLogicAppArtifacts": true,
+
+    "DeployLogAnalytics": true,
+    
+    "DeployMLWorkspace": true,
+
+    "DeployMLCompute": true,
+    
+    "DeployCognitiveService": true,
+    
+    "DeployEventHubNamespace": false,
+
+    "DeployStreamAnalytics": false,
+
+    "DeployDataScienceToolkit": true
+}

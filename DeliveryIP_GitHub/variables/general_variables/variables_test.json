@@ -1,0 +1,56 @@
+{
+    "azureResourceLocation": "eastus2",
+
+    "PrimaryRgName": "rg-actsd-test-eu2-main-01",
+
+    "tags": {
+        "env": "test"
+    },
+
+    "AADGroup_Name": "",
+
+    "synapseWorkspaceName": "",
+
+    "dataFactoryName": "",
+
+    "azureSQLServerName": "",
+    "azureSQLServerDBName": "MetadataControl",
+
+    "keyVaultName": "",
+
+    "dataLakeName": "",
+
+    "landingStorageName": "",
+
+    "LogicAppRgName": "rg-actsd-test-eu2-logic-01",
+
+    "logicAppName": "",
+
+    "logicAppServicePlanName": "",
+
+    "logicAppStorageName": "",
+
+    "logicAppInsightsName": "",
+
+    "purviewName": "",
+
+    "logAnalyticsName": "",
+
+    "MlRgName": "rg-actsd-test-eu2-ml-01",
+
+    "mlWorkspaceName": "",
+
+    "mlWorkspaceKeyVaultName": "",
+
+    "mlStorageName": "",
+
+    "mlAppInsightsName": "",
+
+    "mlContainerRegistryName": "",
+
+    "cognitiveServiceName": "",
+
+    "eventHubNamespaceName": "",
+
+    "streamAnalyticsName": ""
+}
